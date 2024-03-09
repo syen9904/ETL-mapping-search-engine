@@ -23,7 +23,7 @@ def create_fake_df():
         'Name': ['John Doe', 'Jane Doe', 'Jim Brown', 'Jake Blues'],
         'Age': [28, 34, 23, 45],
         'City': ['New York', 'Los Angeles', 'Chicago', 'New Orleans'],
-        'Occupation': ['Software Developer', 'Data Scientist', 'Product Manager', 'Musician']
+        'Occupation': ['Developer', 'Scientist', 'Manager', 'Musician']
     }
     df = pd.DataFrame(data)
     return df
