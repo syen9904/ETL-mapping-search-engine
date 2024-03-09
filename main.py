@@ -30,7 +30,7 @@ def create_fake_df():
 
 def csv_to_sqlite(csv_path, db_path, table_name):
     if os.path.exists(db_path): 
-        print('db already exist')
+        print(f'db already exist at {db_path}')
         return get_db_columns(db_path=db_path, table_name=table_name)
     if os.path.exists(csv_path):
         cteVocabMapDF = pd.read_csv(csv_path, on_bad_lines="skip", delimiter="|")
@@ -41,7 +41,7 @@ def csv_to_sqlite(csv_path, db_path, table_name):
     conn = sqlite3.connect(db_path)
     cteVocabMapDF.to_sql(table_name, conn, if_exists='replace', index=False)
     conn.close()
-    print('db created')
+    print(f'db created at {db_path}')
     return cteVocabMapDF.columns
 
 def indexing(db_path, columns, table_name):
@@ -96,9 +96,9 @@ async def root(request: Request):
         results = ""
     return HTMLResponse(content=html_content.format(search_str=search_str, results=results))
 
-print(os.getcwd())
-csv_path = os.getcwd() + "/cteVocabMapDF.csv"
-db_path = os.getcwd() + "/database.db"
+parent_dir = os.path.dirname(os.getcwd())
+csv_path = parent_dir + "/cteVocabMapDF.csv"
+db_path = parent_dir + "/database.db"
 table_name = 'data'
 COLUMNS = ['source_code', 'source_concept_id', 'source_code_description', 'source_vocabulary_id', 'source_domain_id', 'source_concept_class_id','target_concept_id', 'target_concept_name', 'target_vocabulary_id', 'target_domain_id', 'target_concept_class_id']
 
