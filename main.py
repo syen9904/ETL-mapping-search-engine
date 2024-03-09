@@ -10,40 +10,64 @@ import aiosqlite
 import nest_asyncio
 import uvicorn
 
-def csv_to_sqlite(csv_path, db_path):
-    cteVocabMapDF = pd.read_csv(csv_path, on_bad_lines="skip", delimiter="|")
-    print(cteVocabMapDF.shape)
-    #sample_cteVocabMapDF = cteVocabMapDF.sample(frac = 1, random_state = 1)
-    #print(sample_cteVocabMapDF.shape)
+def get_db_columns(db_path, table_name):
     conn = sqlite3.connect(db_path)
-    cteVocabMapDF.to_sql('data', conn, if_exists='replace', index=False)
-    #sample_cteVocabMapDF.to_sql('data', conn, if_exists='replace', index=False)
+    cursor = conn.cursor()
+    cursor.execute(f"PRAGMA table_info({table_name});")
+    columns = [row[1] for row in cursor.fetchall()] 
     conn.close()
+    return columns
+    
+def create_fake_df():
+    data = {
+        'Name': ['John Doe', 'Jane Doe', 'Jim Brown', 'Jake Blues'],
+        'Age': [28, 34, 23, 45],
+        'City': ['New York', 'Los Angeles', 'Chicago', 'New Orleans'],
+        'Occupation': ['Software Developer', 'Data Scientist', 'Product Manager', 'Musician']
+    }
+    df = pd.DataFrame(data)
+    return df
 
-def indexing(db_path, columns):
+def csv_to_sqlite(csv_path, db_path, table_name):
+    if os.path.exists(db_path): 
+        print('db already exist')
+        return get_db_columns(db_path=db_path, table_name=table_name)
+    if os.path.exists(csv_path):
+        cteVocabMapDF = pd.read_csv(csv_path, on_bad_lines="skip", delimiter="|")
+        print('csv was read successfully. Size:', cteVocabMapDF.shape)
+    else:
+        cteVocabMapDF = create_fake_df()
+        print('test df was created successfully. Size:', cteVocabMapDF.shape)
+    conn = sqlite3.connect(db_path)
+    cteVocabMapDF.to_sql(table_name, conn, if_exists='replace', index=False)
+    conn.close()
+    print('db created')
+    return cteVocabMapDF.columns
+
+def indexing(db_path, columns, table_name):
     conn = sqlite3.connect(db_path)
     for column in columns:     
         index_name = f'idx_{column}'
-        conn.execute(f'CREATE INDEX IF NOT EXISTS {index_name} ON data ({column})')
+        conn.execute(f'CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({column})')
         print(column)
     conn.close()
 
-def str_to_query(search_str, columns):
+def str_to_query(search_str, columns, table_name):
     select_clause = ", ".join([f'"{col}"' for col in columns])
     like_clauses = [f'"{col}" LIKE "%{search_str}%"' for col in columns]
     query_condition = " OR ".join(like_clauses)
-    query = f"SELECT {select_clause} FROM data WHERE {query_condition}"
+    query = f"SELECT {select_clause} FROM {table_name} WHERE {query_condition}"
     return query 
 
-async def search(search_str, columns):
-    query = str_to_query(search_str, columns)
+async def search(search_str, columns, table_name):
+    query = str_to_query(search_str, columns, table_name)
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(query)
         result = await cursor.fetchall()
         return result
  
-async def construct_html_table(search_str: str, columns: List[str]) -> str:
-    result = await search(search_str, columns)
+async def construct_html_table(search_str: str, columns: List[str], table_name) -> str:
+    result = await search(search_str, columns, table_name)
     if not result:
         return '<p>No results found.</p>'
 
@@ -67,20 +91,19 @@ async def root(request: Request):
 
     search_str = request.query_params.get('search_str', '') 
     if search_str:
-        results = await construct_html_table(search_str, columns)
+        results = await construct_html_table(search_str, columns, table_name)
     else:
         results = ""
     return HTMLResponse(content=html_content.format(search_str=search_str, results=results))
 
-csv_path = "cteVocabMapDF.csv"
-db_path = "database.db"
-columns = ['source_code', 'source_concept_id', 'source_code_description'
-    , 'source_vocabulary_id', 'source_domain_id', 'source_concept_class_id'
-    ,'target_concept_id', 'target_concept_name', 'target_vocabulary_id'
-    , 'target_domain_id', 'target_concept_class_id']
-
-#csv_to_sqlite(csv_path=csv_path, db_path=db_path)
-#indexing(db_path=db_path, columns=columns)
+print(os.getcwd())
+csv_path = os.getcwd() + "/cteVocabMapDF.csv"
+db_path = os.getcwd() + "/database.db"
+table_name = 'data'
+COLUMNS = ['source_code', 'source_concept_id', 'source_code_description', 'source_vocabulary_id', 'source_domain_id', 'source_concept_class_id','target_concept_id', 'target_concept_name', 'target_vocabulary_id', 'target_domain_id', 'target_concept_class_id']
 
 if __name__ == "__main__":
+    columns = csv_to_sqlite(csv_path=csv_path, db_path=db_path, table_name=table_name)
+    if os.path.exists(csv_path): columns = COLUMNS
+    #indexing(db_path=db_path, columns=columns)
     uvicorn.run(app, host = "0.0.0.0", port=8000)   
