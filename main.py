@@ -28,7 +28,7 @@ def create_fake_df():
     df = pd.DataFrame(data)
     return df
 
-def csv_to_sqlite(csv_path, db_path, table_name):
+def csv_to_sqlite(csv_path, db_path, table_name) -> List:
     if os.path.exists(db_path): 
         print(f'db already exist at {db_path}')
         return get_db_columns(db_path=db_path, table_name=table_name)
@@ -52,18 +52,19 @@ def indexing(db_path, columns, table_name):
         print(column)
     conn.close()
 
-def str_to_query(search_str, columns, table_name):
+def str_to_query(search_str, columns, table_name) -> str:
     select_clause = ", ".join([f'"{col}"' for col in columns])
     like_clauses = [f'"{col}" LIKE "%{search_str}%"' for col in columns]
     query_condition = " OR ".join(like_clauses)
     query = f"SELECT {select_clause} FROM {table_name} WHERE {query_condition}"
     return query 
 
-async def search(search_str, columns, table_name):
+async def search(search_str, columns, table_name) -> List:
     query = str_to_query(search_str, columns, table_name)
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(query)
         result = await cursor.fetchall()
+        print(result)
         return result
  
 async def construct_html_table(search_str: str, columns: List[str], table_name) -> str:
@@ -75,7 +76,7 @@ async def construct_html_table(search_str: str, columns: List[str], table_name) 
     for col in columns:
         table_html += f'<th>{col}</th>'
     table_html += '</tr>'
- 
+
     for row in result:
         table_html += '<tr>' + ''.join([f'<td>{cell}</td>' for cell in row]) + '</tr>'
     table_html += '</table>'
