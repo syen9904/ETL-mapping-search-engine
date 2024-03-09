@@ -64,7 +64,6 @@ async def search(search_str, columns, table_name) -> List:
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(query)
         result = await cursor.fetchall()
-        print(result)
         return result
  
 async def construct_html_table(search_str: str, columns: List[str], table_name) -> str:
