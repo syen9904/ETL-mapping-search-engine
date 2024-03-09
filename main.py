@@ -28,7 +28,7 @@ def create_fake_df():
     df = pd.DataFrame(data)
     return df
 
-def csv_to_sqlite(csv_path, db_path, table_name) -> List:
+def create_db(csv_path, db_path, table_name) -> List:
     if os.path.exists(db_path): 
         print(f'db already exist at {db_path}')
         return get_db_columns(db_path=db_path, table_name=table_name)
@@ -103,7 +103,7 @@ table_name = 'data'
 COLUMNS = ['source_code', 'source_concept_id', 'source_code_description', 'source_vocabulary_id', 'source_domain_id', 'source_concept_class_id','target_concept_id', 'target_concept_name', 'target_vocabulary_id', 'target_domain_id', 'target_concept_class_id']
 
 if __name__ == "__main__":
-    columns = csv_to_sqlite(csv_path=csv_path, db_path=db_path, table_name=table_name)
+    columns = create_db(csv_path=csv_path, db_path=db_path, table_name=table_name)
     if os.path.exists(csv_path): columns = COLUMNS
-    #indexing(db_path=db_path, columns=columns)
+    #indexing(db_path=db_path, columns=columns, table_name=table_name)
     uvicorn.run(app, host = "0.0.0.0", port=8000)   
