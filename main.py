@@ -5,7 +5,8 @@ from typing import Optional, List
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+import json
 import asyncio
 import nest_asyncio
 import aiosqlite
@@ -36,7 +37,7 @@ def create_fake_df():
         'Occupation2': ['Developer', 'Scientist', 'Manager', 'Musician']
     }
     df = pd.DataFrame(data)
-    for i in range(14):
+    for i in range(2):
         df = pd.concat([df, df])
     return df
 
@@ -97,17 +98,8 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
 
 nest_asyncio.apply()
 app = FastAPI()
-"""@app.get("/", response_class=HTMLResponse)
-async def root():
-    # Read the HTML file
-    with open("static/template.html", 'r') as file:
-        html_content = file.read()
-
-    # Inject the columns into the JavaScript code within the HTML
-    columns_js_array = str(columns).replace("'", '"')  # Convert Python list to JS array string
-    html_content = html_content.replace("['col1', 'col2']", columns_js_array)
-    return HTMLResponse(content=html_content)
-"""
+app.mount("/static", StaticFiles(directory=os.getcwd() + '/static'))
+results_cache = {}
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     with open(os.getcwd() + "/static/template.html", 'r') as file:
@@ -118,15 +110,24 @@ async def root(request: Request):
     else:
         results = {"result": []}
     num_results = len(results["result"])
-    return HTMLResponse(content=html_content.format(search_str=search_str, num_results=num_results))
+    print(num_results)
 
-"""
-@app.get("/api/search/")
-async def api_search(search_str: str):
-    # Correctly awaiting the search coroutine
-    result = await search(search_str=search_str, columns=columns, table_name=table_name)
-    print(f'[{current_time()}]: result returned to html for rendering')
-    return result"""
+    # for further table rendering   
+    search_key = f"results_{search_str}"
+    results_cache[search_key] = results["result"]
+
+    # Convert column names to JSON string for JavaScript
+    columns_json = json.dumps(columns)
+    html_content = html_content.replace('%%COLUMN_NAMES%%', columns_json)
+
+    return HTMLResponse(content=html_content.format(search_str=search_str, num_results=num_results, search_key=search_key))
+
+@app.get("/api/results/{search_key}")
+async def get_results(search_key: str):
+    results = results_cache.get(search_key, [])
+    # Convert results into the expected dictionary format
+    result = [dict(zip(columns, record)) for record in results]
+    return JSONResponse(content={"result": result})
 
 parent_dir = os.path.dirname(os.getcwd())
 csv_path = parent_dir + "/cteVocabMapDF.csv"
