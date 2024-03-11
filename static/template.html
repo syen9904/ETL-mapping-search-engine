@@ -22,23 +22,10 @@
         async function loadData(searchStr) {
             const newUrl = `${window.location.pathname}?search_str=${encodeURIComponent(searchStr)}`;
             const response = await fetch(`/api/search/?search_str=${encodeURIComponent(searchStr)}`);
-            //window.history.pushState({ path: newUrl }, '', newUrl);
+            window.history.pushState({ path: newUrl }, '', newUrl);
             await displayResults(await response.json());
         }
     
-        async function addRows(result, table) {
-            for (const rowData of result) {
-                const row = document.createElement('tr');
-                rowData.forEach(cellData => {
-                    const cell = document.createElement('td');
-                    cell.textContent = cellData;
-                    row.appendChild(cell);
-                });
-                table.appendChild(row);
-                await new Promise(resolve => setTimeout(resolve, 200)); 
-            }
-        }
-
         function displayResults(data) {
             const resultsContainer = document.getElementById('results');
             resultsContainer.innerHTML = ''; // Clear previous results
@@ -62,6 +49,19 @@
                 addRows(data.result, table);
             } else {
                 resultsContainer.innerHTML = '<p>No results found.</p>';
+            }
+        }
+
+        async function addRows(result, table) {
+            for (const rowData of result) {
+                const row = document.createElement('tr');
+                rowData.forEach(cellData => {
+                    const cell = document.createElement('td');
+                    cell.textContent = cellData;
+                    row.appendChild(cell);
+                });
+                table.appendChild(row);
+                await new Promise(resolve => setTimeout(resolve, 200)); 
             }
         }
 
