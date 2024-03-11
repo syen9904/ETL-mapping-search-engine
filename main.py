@@ -125,4 +125,4 @@ if __name__ == "__main__":
     columns = create_db(csv_path=csv_path, db_path=db_path, table_name=table_name)
     if os.path.exists(csv_path): columns = COLUMNS
     #indexing(db_path=db_path, columns=columns, table_name=table_name)
-    uvicorn.run(app, host = "0.0.0.0", port=8000)   
+    uvicorn.run(app, host = "0.0.0.0", port=9487)   
