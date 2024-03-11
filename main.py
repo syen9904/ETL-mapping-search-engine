@@ -76,6 +76,11 @@ def str_to_query(search_str, columns, table_name) -> str:
 def current_time():
     return datetime.now().strftime("%H:%M:%S")
 
+def create_table_header(columns):
+    header_cells = ''.join(f'<th>{name}</th>' for name in columns)
+    header_html = f'<table id=border="5"><tr>{header_cells}</tr></table>'    
+    return header_html
+
 async def search(search_str, columns, table_name, retry_count=3, timeout_duration=10):
     query = str_to_query(search_str, columns, table_name)
     for attempt in range(retry_count):
@@ -110,7 +115,8 @@ async def root(request: Request):
     else:
         results = {"result": []}
     num_results = len(results["result"])
-    print(num_results)
+    if num_results < 0:
+        html_content += create_table_header(columns)
 
     # for further table rendering   
     search_key = f"results_{search_str}"
@@ -119,7 +125,7 @@ async def root(request: Request):
     # Convert column names to JSON string for JavaScript
     columns_json = json.dumps(columns)
     html_content = html_content.replace('%%COLUMN_NAMES%%', columns_json)
-
+    print(num_results)
     return HTMLResponse(content=html_content.format(search_str=search_str, num_results=num_results, search_key=search_key))
 
 @app.get("/api/results/{search_key}")
@@ -127,6 +133,8 @@ async def get_results(search_key: str):
     results = results_cache.get(search_key, [])
     # Convert results into the expected dictionary format
     result = [dict(zip(columns, record)) for record in results]
+    print(JSONResponse(content={"result": results_cache[search_key]}))
+    return JSONResponse(content={"result": results_cache[search_key]})
     return JSONResponse(content={"result": result})
 
 parent_dir = os.path.dirname(os.getcwd())
@@ -138,5 +146,6 @@ COLUMNS = ['source_code', 'source_concept_id', 'source_code_description', 'sourc
 if __name__ == "__main__":
     columns = create_db(csv_path=csv_path, db_path=db_path, table_name=table_name)
     if os.path.exists(csv_path): columns = COLUMNS
+    print('columns = ', columns)
     #indexing(db_path=db_path, columns=columns, table_name=table_name)
     uvicorn.run(app, host = "0.0.0.0", port=9487)   

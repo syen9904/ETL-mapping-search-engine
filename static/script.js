@@ -3,6 +3,7 @@
 async function loadData(searchKey) {
     const response = await fetch(`/api/results/${searchKey}`);
     const data = await response.json();
+    console.log(data)
     displayResults(data.result); // Assuming the API wraps results in a 'result' object
 }
 
@@ -21,15 +22,10 @@ document.getElementById('searchForm').addEventListener('submit', async function(
 
 // This function is responsible for displaying the results. It dynamically creates a table
 // based on the data fetched from either the initial load or a new search.
-function displayResults(data) {
+async function displayResults(data) {
     const resultsContainer = document.getElementById('results');
-    resultsContainer.innerHTML = ''; // Clear previous results
-
+    console.log(data.length)
     if (data && data.length > 0) {
-        let resultsText = document.createElement('p');
-        resultsText.innerHTML = `${data.length} mapping relationships found.`;
-        resultsContainer.appendChild(resultsText);
-
         const table = document.createElement('table');
         table.setAttribute('border', '1');
 
@@ -41,21 +37,26 @@ function displayResults(data) {
             headerRow.appendChild(headerCell);
         });
         table.appendChild(headerRow);
-
-        // Add rows (ensure the data structure aligns with your column names)
-        data.forEach(rowData => {
-            const row = document.createElement('tr');
-            columnNames.forEach(colName => {
-                const cell = document.createElement('td');
-                cell.textContent = rowData[colName]; // Adjust based on your data structure
-                row.appendChild(cell);
-            });
-            table.appendChild(row);
-        });
-
         resultsContainer.appendChild(table);
+        console.log(data)
+        await addRows(data, table)
     } else {
         resultsContainer.innerHTML = '<p>No results found.</p>';
+    }
+}
+
+async function addRows(result, table) {
+    for (const rowData of result) {
+        console.log(rowData)
+        const row = document.createElement('tr');
+        rowData.forEach(cellData => {
+            const cell = document.createElement('td');
+            cell.textContent = cellData;
+            row.appendChild(cell);
+        });
+        table.appendChild(row);
+        // Simulate a slight delay if needed for each row
+        await new Promise(resolve => setTimeout(resolve, 10)); 
     }
 }
 
