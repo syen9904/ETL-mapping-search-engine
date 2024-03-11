@@ -28,6 +28,8 @@ def create_fake_df():
         'Occupation': ['Developer', 'Scientist', 'Manager', 'Musician']
     }
     df = pd.DataFrame(data)
+    for i in range(5):
+        df = pd.concat([df, df])
     return df
 
 def create_db(csv_path, db_path, table_name) -> List:
@@ -44,7 +46,8 @@ def create_db(csv_path, db_path, table_name) -> List:
     cteVocabMapDF.to_sql(table_name, conn, if_exists='replace', index=False)
     conn.close()
     print(f'db created at {db_path}')
-    return cteVocabMapDF.columns
+    print(cteVocabMapDF.columns)
+    return cteVocabMapDF.columns.tolist()
 
 def indexing(db_path, columns, table_name):
     conn = sqlite3.connect(db_path)
@@ -75,46 +78,34 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
                 print(f'[{current_time()}]: query executed')
                 result = await asyncio.wait_for(cursor.fetchall(), timeout=timeout_duration)
                 print(f'[{current_time()}]: result fetched')
-                return result
+                return {"result": result}
         except asyncio.TimeoutError:
             print(f"Query timeout! Retrying {attempt + 1}/{retry_count}...")
             await asyncio.sleep(1)
         except Exception as e:
             print(f"An error occurred: {e}")
             break  # Stop retrying on non-timeout errors
-    return []  # Return an empty list or appropriate error response if retries exceeded
- 
-async def construct_html_table(search_str: str, columns: List[str], table_name) -> str:
-    result = await search(search_str, columns, table_name)
-    print(f'[{current_time()}]: table construct start')
-    if not result:
-        return '<p>No results found.</p>'
-
-    num_results = len(result)  # Get the number of results
-    table_html = f'<p>{num_results} mapping relationships found.</p><table border="1"><tr>'
-    for col in columns:
-        table_html += f'<th>{col}</th>'
-    table_html += '</tr>'
-
-    for row in result:
-        table_html += '<tr>' + ''.join([f'<td>{cell}</td>' for cell in row]) + '</tr>'
-    table_html += '</table>'
-    print(f'[{current_time()}]: table construct end')
-    return table_html
+    return {result: []}  # Return an empty list or appropriate error response if retries exceeded
 
 nest_asyncio.apply()
 app = FastAPI()
+
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    with open("template.html", 'r') as file:
+async def root():
+    # Read the HTML file
+    with open("static/template.html", 'r') as file:
         html_content = file.read()
 
-    search_str = request.query_params.get('search_str', '') 
-    if search_str:
-        results = await construct_html_table(search_str, columns, table_name)
-    else:
-        results = ""
-    return HTMLResponse(content=html_content.format(search_str=search_str, results=results))
+    # Inject the columns into the JavaScript code within the HTML
+    columns_js_array = str(columns).replace("'", '"')  # Convert Python list to JS array string
+    html_content = html_content.replace("['col1', 'col2']", columns_js_array)
+    return HTMLResponse(content=html_content)
+
+@app.get("/api/search/")
+async def api_search(search_str: str):
+    # Correctly awaiting the search coroutine
+    result = await search(search_str=search_str, columns=columns, table_name=table_name)
+    return result
 
 parent_dir = os.path.dirname(os.getcwd())
 csv_path = parent_dir + "/cteVocabMapDF.csv"
