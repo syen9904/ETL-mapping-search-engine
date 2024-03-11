@@ -6,9 +6,11 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
-import aiosqlite
+import asyncio
 import nest_asyncio
+import aiosqlite
 import uvicorn
+from datetime import datetime
 
 def get_db_columns(db_path, table_name):
     conn = sqlite3.connect(db_path)
@@ -59,7 +61,8 @@ def str_to_query(search_str, columns, table_name) -> str:
     query = f"SELECT {select_clause} FROM {table_name} WHERE {query_condition}"
     return query 
 
-import asyncio
+def current_time():
+    return datetime.now().strftime("%H:%M:%S")
 
 async def search(search_str, columns, table_name, retry_count=3, timeout_duration=10):
     query = str_to_query(search_str, columns, table_name)
@@ -67,9 +70,11 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
         try:
             async with aiosqlite.connect(db_path) as db:
                 # Attempt to execute the query with a timeout
-                print(f'{attempt}/3 attempt for searching "{search_str}"')
+                print(f'[{current_time()}]: {attempt}/3 attempt for searching "{search_str}"')
                 cursor = await asyncio.wait_for(db.execute(query), timeout=timeout_duration)
+                print(f'[{current_time()}]: query executed')
                 result = await asyncio.wait_for(cursor.fetchall(), timeout=timeout_duration)
+                print(f'[{current_time()}]: result fetched')
                 return result
         except asyncio.TimeoutError:
             print(f"Query timeout! Retrying {attempt + 1}/{retry_count}...")
@@ -81,6 +86,7 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
  
 async def construct_html_table(search_str: str, columns: List[str], table_name) -> str:
     result = await search(search_str, columns, table_name)
+    print(f'[{current_time()}]: table construct start')
     if not result:
         return '<p>No results found.</p>'
 
@@ -93,7 +99,7 @@ async def construct_html_table(search_str: str, columns: List[str], table_name) 
     for row in result:
         table_html += '<tr>' + ''.join([f'<td>{cell}</td>' for cell in row]) + '</tr>'
     table_html += '</table>'
-
+    print(f'[{current_time()}]: table construct end')
     return table_html
 
 nest_asyncio.apply()
