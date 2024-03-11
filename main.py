@@ -113,6 +113,7 @@ async def root():
 async def api_search(search_str: str):
     # Correctly awaiting the search coroutine
     result = await search(search_str=search_str, columns=columns, table_name=table_name)
+    print(f'[{current_time()}]: result returned to html for rendering')
     return result
 
 parent_dir = os.path.dirname(os.getcwd())
