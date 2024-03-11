@@ -18,5 +18,89 @@
         <input type="button" value="Search"><!-- onclick="initiateSearch()">-->
     </form>
     <div id="results"><p>{num_results} mapping relationships found.</p></div>
+    
+    <script>
+        <!--
+        
+                async function loadData(searchStr) {
+                    const response = await fetch(`/?search_str=${encodeURIComponent(searchStr)}`);
+                    console.log(response)
+                    const data = response
+                    console.log('veerygood')
+                    const numResults = data.result.length;
+                    const resultsContainer = document.getElementById('results');
+                    resultsContainer.innerHTML = `<p>${numResults} mapping relationships found.</p>`;
+                }
+                function initiateSearch() {
+                    const searchStr = document.getElementById('searchStr').value;
+                    loadData(searchStr);
+                }
+        
+                function checkForSearchOnLoad() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const searchStr = urlParams.get('search_str');
+                    if (searchStr) {
+                        document.getElementById('searchStr').value = searchStr;
+                        loadData(searchStr);
+                    }
+                }
+        
+                window.onload = checkForSearchOnLoad;
+            -->
+            </script>
+        <!--
+            <script>
+                async function loadData(searchStr) {
+                    const newUrl = `${window.location.pathname}?search_str=${encodeURIComponent(searchStr)}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+        
+                    const response = await fetch(`/api/search/?search_str=${encodeURIComponent(searchStr)}`);
+                    const data = await response.json()
+        
+                    await displayResults(data);
+                }
+            
+                function displayResults(data) {
+                    const resultsContainer = document.getElementById('results');
+                    resultsContainer.innerHTML = '<p>Searching...</p>'; // Clear previous results
+        
+                    if (data.result && data.result.length > 0) {
+                        const numResults = data.result.length;
+                        resultsContainer.innerHTML = `<p>${numResults} mapping relationships found.</p>`;
+                        const table = document.createElement('table');
+                        table.setAttribute('border', '1');
+                        table.setAttribute('id', 'resultsTable');
+                        
+                        const headerRow = document.createElement('tr');
+                        const columns = ['col1', 'col2']; // Example column headers
+                        columns.forEach(col => {
+                            const headerCell = document.createElement('th');
+                            headerCell.textContent = col;
+                            headerRow.appendChild(headerCell);
+                        });
+                        table.appendChild(headerRow);
+                        resultsContainer.appendChild(table);
+                        addRows(data.result, table);
+                    } else {
+                        resultsContainer.innerHTML = '<p>No results found.</p>';
+                    }
+                }
+        
+                async function addRows(result, table) {
+                    for (const rowData of result) {
+                        const row = document.createElement('tr');
+                        rowData.forEach(cellData => {
+                            const cell = document.createElement('td');
+                            cell.textContent = cellData;
+                            row.appendChild(cell);
+                        });
+                        table.appendChild(row);
+                        await new Promise(resolve => setTimeout(resolve, 200)); 
+                    }
+                }
+        
+                
+            </script> 
+        -->
 </body>
 </html>
