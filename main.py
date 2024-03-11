@@ -55,7 +55,6 @@ def create_db(csv_path, db_path, table_name) -> List:
     cteVocabMapDF.to_sql(table_name, conn, if_exists='replace', index=False)
     conn.close()
     print(f'db created at {db_path}')
-    print(cteVocabMapDF.columns)
     return cteVocabMapDF.columns.tolist()
 
 def indexing(db_path, columns, table_name):
@@ -133,9 +132,7 @@ async def get_results(search_key: str):
     results = results_cache.get(search_key, [])
     # Convert results into the expected dictionary format
     result = [dict(zip(columns, record)) for record in results]
-    print(JSONResponse(content={"result": results_cache[search_key]}))
     return JSONResponse(content={"result": results_cache[search_key]})
-    return JSONResponse(content={"result": result})
 
 parent_dir = os.path.dirname(os.getcwd())
 csv_path = parent_dir + "/cteVocabMapDF.csv"
