@@ -67,8 +67,9 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
         try:
             async with aiosqlite.connect(db_path) as db:
                 # Attempt to execute the query with a timeout
+                print(f'{attempt}/3 attempt for searching "{search_str}"')
                 cursor = await asyncio.wait_for(db.execute(query), timeout=timeout_duration)
-                result = await cursor.fetchall()
+                result = await asyncio.wait_for(cursor.fetchall(), timeout=timeout_duration)
                 return result
         except asyncio.TimeoutError:
             print(f"Query timeout! Retrying {attempt + 1}/{retry_count}...")
