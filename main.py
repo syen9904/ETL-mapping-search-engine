@@ -97,8 +97,7 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
 
 nest_asyncio.apply()
 app = FastAPI()
-
-@app.get("/", response_class=HTMLResponse)
+"""@app.get("/", response_class=HTMLResponse)
 async def root():
     # Read the HTML file
     with open("static/template.html", 'r') as file:
@@ -108,13 +107,26 @@ async def root():
     columns_js_array = str(columns).replace("'", '"')  # Convert Python list to JS array string
     html_content = html_content.replace("['col1', 'col2']", columns_js_array)
     return HTMLResponse(content=html_content)
+"""
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    with open(os.getcwd() + "/static/template.html", 'r') as file:
+        html_content = file.read()
+    search_str = request.query_params.get('search_str', '') 
+    if search_str:
+        results = await search(search_str, columns, table_name)
+    else:
+        results = {"result": []}
+    num_results = len(results["result"])
+    return HTMLResponse(content=html_content.format(search_str=search_str, num_results=num_results))
 
+"""
 @app.get("/api/search/")
 async def api_search(search_str: str):
     # Correctly awaiting the search coroutine
     result = await search(search_str=search_str, columns=columns, table_name=table_name)
     print(f'[{current_time()}]: result returned to html for rendering')
-    return result
+    return result"""
 
 parent_dir = os.path.dirname(os.getcwd())
 csv_path = parent_dir + "/cteVocabMapDF.csv"
