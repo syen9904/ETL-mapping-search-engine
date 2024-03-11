@@ -83,7 +83,8 @@ async def construct_html_table(search_str: str, columns: List[str], table_name) 
     if not result:
         return '<p>No results found.</p>'
 
-    table_html = '<table border="1"><tr>'
+    num_results = len(result)  # Get the number of results
+    table_html = f'<p>{num_results} mapping relationships found.</p><table border="1"><tr>'
     for col in columns:
         table_html += f'<th>{col}</th>'
     table_html += '</tr>'
