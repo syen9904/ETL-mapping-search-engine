@@ -39,7 +39,7 @@
             table.appendChild(row);
         }
 
-        function displayResults(data) {
+        async function displayResults(data) {
             const resultsContainer = document.getElementById('results');
             resultsContainer.innerHTML = ''; // Clear previous results
 
@@ -60,11 +60,12 @@
                 table.appendChild(headerRow);
                 resultsContainer.appendChild(table);
     
-                data.result.forEach(row => {
+                for (const row of data.result) {
                     addRow(row, table);
-                });
+                    await new Promise(resolve => setTimeout(resolve, 200)); 
+                }       
             } else {
-                resultsContainer.innerHTML = 'No results found.';
+                resultsContainer.innerHTML = '<p>No results found.</p>';
             }
         }
 

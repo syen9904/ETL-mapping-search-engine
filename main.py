@@ -25,10 +25,18 @@ def create_fake_df():
         'Name': ['John Doe', 'Jane Doe', 'Jim Brown', 'Jake Blues'],
         'Age': [28, 34, 23, 45],
         'City': ['New York', 'Los Angeles', 'Chicago', 'New Orleans'],
-        'Occupation': ['Developer', 'Scientist', 'Manager', 'Musician']
+        'Occupation': ['Developer', 'Scientist', 'Manager', 'Musician'],
+        'Name1': ['John Doe', 'Jane Doe', 'Jim Brown', 'Jake Blues'],
+        'Age1': [28, 34, 23, 45],
+        'City1': ['New York', 'Los Angeles', 'Chicago', 'New Orleans'],
+        'Occupation1': ['Developer', 'Scientist', 'Manager', 'Musician'],
+        'Name2': ['John Doe', 'Jane Doe', 'Jim Brown', 'Jake Blues'],
+        'Age2': [28, 34, 23, 45],
+        'City2': ['New York', 'Los Angeles', 'Chicago', 'New Orleans'],
+        'Occupation2': ['Developer', 'Scientist', 'Manager', 'Musician']
     }
     df = pd.DataFrame(data)
-    for i in range(5):
+    for i in range(14):
         df = pd.concat([df, df])
     return df
 
