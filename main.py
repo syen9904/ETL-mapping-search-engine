@@ -59,12 +59,24 @@ def str_to_query(search_str, columns, table_name) -> str:
     query = f"SELECT {select_clause} FROM {table_name} WHERE {query_condition}"
     return query 
 
-async def search(search_str, columns, table_name) -> List:
+import asyncio
+
+async def search(search_str, columns, table_name, retry_count=3, timeout_duration=10):
     query = str_to_query(search_str, columns, table_name)
-    async with aiosqlite.connect(db_path) as db:
-        cursor = await db.execute(query)
-        result = await cursor.fetchall()
-        return result
+    for attempt in range(retry_count):
+        try:
+            async with aiosqlite.connect(db_path) as db:
+                # Attempt to execute the query with a timeout
+                cursor = await asyncio.wait_for(db.execute(query), timeout=timeout_duration)
+                result = await cursor.fetchall()
+                return result
+        except asyncio.TimeoutError:
+            print(f"Query timeout! Retrying {attempt + 1}/{retry_count}...")
+            await asyncio.sleep(1)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            break  # Stop retrying on non-timeout errors
+    return []  # Return an empty list or appropriate error response if retries exceeded
  
 async def construct_html_table(search_str: str, columns: List[str], table_name) -> str:
     result = await search(search_str, columns, table_name)
