@@ -56,7 +56,7 @@ async function addRows(result, table) {
         });
         table.appendChild(row);
         // Simulate a slight delay if needed for each row
-        await new Promise(resolve => setTimeout(resolve, 100)); 
+        // await new Promise(resolve => setTimeout(resolve, 100)); 
     }
 }
 

@@ -145,4 +145,4 @@ if __name__ == "__main__":
     if os.path.exists(csv_path): columns = COLUMNS
     print('columns = ', columns)
     #indexing(db_path=db_path, columns=columns, table_name=table_name)
-    uvicorn.run(app, host = "0.0.0.0", port=9487)   
+    uvicorn.run(app, host = "0.0.0.0", port=8000)   
