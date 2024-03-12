@@ -106,13 +106,13 @@ async def root(request: Request):
     with open(os.getcwd() + "/static/template.html", 'r') as file:
         html_content = file.read()
     search_str = request.query_params.get('search_str', '') 
-    print('\nroot:', search_str)
+    print(f'\n[{current_time()}]: root: {search_str}')
     if search_str:
         results = await search(search_str, columns, table_name)
     else:
         results = {"result": []}
     num_results = len(results["result"])
-    print("num_results:", num_results)
+    print(f"[{current_time()}]num_results: {num_results}")
 
     # for further table rendering   
     search_key = f"results_{search_str}"
@@ -125,7 +125,7 @@ async def root(request: Request):
 
 @app.get("/api/results/{search_key}")
 async def get_results(search_key: str):
-    print('get_results:', search_key[search_key.find('_') + 1 :])
+    print(f"[{current_time()}]get_results: {search_key[search_key.find('_')+1:]}")
     return JSONResponse(content={"result": results_cache[search_key]})
 
 parent_dir = os.path.dirname(os.getcwd())
