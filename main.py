@@ -106,7 +106,7 @@ async def root(request: Request):
     with open(os.getcwd() + "/static/template.html", 'r') as file:
         html_content = file.read()
     search_str = request.query_params.get('search_str', '') 
-    print('root:', search_str)
+    print('\nroot:', search_str)
     if search_str:
         results = await search(search_str, columns, table_name)
     else:
