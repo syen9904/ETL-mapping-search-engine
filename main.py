@@ -97,13 +97,13 @@ async def search(search_str, columns, table_name, retry_count=3, timeout_duratio
 
 nest_asyncio.apply()
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=os.getcwd() + '/static'))
+app.mount("/docs", StaticFiles(directory=os.getcwd() + '/docs'))
 results_cache = {}
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     results_cache.clear()
-    with open(os.getcwd() + "/static/template.html", 'r') as file:
+    with open(os.getcwd() + "/docs/template.html", 'r') as file:
         html_content = file.read()
     search_str = request.query_params.get('search_str', '') 
     print(f'\n[{current_time()}]: root: {search_str}')
