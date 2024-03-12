@@ -38,7 +38,6 @@ async function displayResults(data) {
         });
         table.appendChild(headerRow);
         resultsContainer.appendChild(table);
-        console.log(data)
         await addRows(data, table)
     } else {
         resultsContainer.innerHTML = '<p>No results found.</p>';
