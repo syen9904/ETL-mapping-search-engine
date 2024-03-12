@@ -75,10 +75,10 @@ def str_to_query(search_str, columns, table_name) -> str:
 def current_time():
     return datetime.now().strftime("%H:%M:%S")
 
-def create_table_header(columns):
+"""def create_table_header(columns):
     header_cells = ''.join(f'<th>{name}</th>' for name in columns)
     header_html = f'<table id=border="5"><tr>{header_cells}</tr></table>'    
-    return header_html
+    return header_html"""
 
 async def search(search_str, columns, table_name, retry_count=3, timeout_duration=10):
     query = str_to_query(search_str, columns, table_name)
@@ -109,29 +109,27 @@ async def root(request: Request):
     with open(os.getcwd() + "/static/template.html", 'r') as file:
         html_content = file.read()
     search_str = request.query_params.get('search_str', '') 
+    print('root:', search_str)
     if search_str:
         results = await search(search_str, columns, table_name)
     else:
         results = {"result": []}
     num_results = len(results["result"])
-    if num_results < 0:
-        html_content += create_table_header(columns)
+    print("num_results:", num_results)
 
     # for further table rendering   
+    results_cache.clear()
     search_key = f"results_{search_str}"
     results_cache[search_key] = results["result"]
 
     # Convert column names to JSON string for JavaScript
     columns_json = json.dumps(columns)
     html_content = html_content.replace('%%COLUMN_NAMES%%', columns_json)
-    print(num_results)
     return HTMLResponse(content=html_content.format(search_str=search_str, num_results=num_results, search_key=search_key))
 
 @app.get("/api/results/{search_key}")
 async def get_results(search_key: str):
-    results = results_cache.get(search_key, [])
-    # Convert results into the expected dictionary format
-    result = [dict(zip(columns, record)) for record in results]
+    print('get_results:', search_key[search_key.find('_') + 1 :])
     return JSONResponse(content={"result": results_cache[search_key]})
 
 parent_dir = os.path.dirname(os.getcwd())
