@@ -106,6 +106,7 @@ app.mount("/static", StaticFiles(directory=os.getcwd() + '/static'))
 results_cache = {}
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
+    results_cache.clear()
     with open(os.getcwd() + "/static/template.html", 'r') as file:
         html_content = file.read()
     search_str = request.query_params.get('search_str', '') 
@@ -118,7 +119,6 @@ async def root(request: Request):
     print("num_results:", num_results)
 
     # for further table rendering   
-    results_cache.clear()
     search_key = f"results_{search_str}"
     results_cache[search_key] = results["result"]
 
