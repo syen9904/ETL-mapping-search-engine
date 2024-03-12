@@ -3,7 +3,7 @@
 async function loadData(searchKey) {
     const response = await fetch(`/api/results/${searchKey}`);
     const data = await response.json();
-    console.log(data)
+    console.log("data: ", data)
     displayResults(data.result); // Assuming the API wraps results in a 'result' object
 }
 
@@ -24,7 +24,7 @@ document.getElementById('searchForm').addEventListener('submit', async function(
 // based on the data fetched from either the initial load or a new search.
 async function displayResults(data) {
     const resultsContainer = document.getElementById('results');
-    console.log(data.length)
+    console.log("rows: ", data.length)
     if (data && data.length > 0) {
         const table = document.createElement('table');
         table.setAttribute('border', '1');
@@ -47,7 +47,6 @@ async function displayResults(data) {
 
 async function addRows(result, table) {
     for (const rowData of result) {
-        console.log(rowData)
         const row = document.createElement('tr');
         rowData.forEach(cellData => {
             const cell = document.createElement('td');
