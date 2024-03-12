@@ -112,7 +112,7 @@ async def root(request: Request):
     else:
         results = {"result": []}
     num_results = len(results["result"])
-    print(f"[{current_time()}]num_results: {num_results}")
+    print(f"[{current_time()}]: num_results: {num_results}")
 
     # for further table rendering   
     search_key = f"results_{search_str}"
@@ -125,7 +125,7 @@ async def root(request: Request):
 
 @app.get("/api/results/{search_key}")
 async def get_results(search_key: str):
-    print(f"[{current_time()}]get_results: {search_key[search_key.find('_')+1:]}")
+    print(f"[{current_time()}]: get_results: {search_key[search_key.find('_')+1:]}")
     return JSONResponse(content={"result": results_cache[search_key]})
 
 parent_dir = os.path.dirname(os.getcwd())
