@@ -120,6 +120,8 @@ async def root(request: Request):
 
     # Convert column names to JSON string for JavaScript
     columns_json = json.dumps(columns)
+    columns_json = columns_json.replace('source', 'PMAP')
+    columns_json = columns_json.replace('target', 'OMOP')
     html_content = html_content.replace('%%COLUMN_NAMES%%', columns_json)
     return HTMLResponse(content=html_content.format(search_str=search_str, num_results=num_results, search_key=search_key))
 
