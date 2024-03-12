@@ -103,7 +103,7 @@ results_cache = {}
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     results_cache.clear()
-    with open(os.getcwd() + "/docs/template.html", 'r') as file:
+    with open(os.getcwd() + "/docs/index.html", 'r') as file:
         html_content = file.read()
     search_str = request.query_params.get('search_str', '') 
     print(f'\n[{current_time()}]: root: {search_str}')
