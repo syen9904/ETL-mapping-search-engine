@@ -75,12 +75,7 @@ def str_to_query(search_str, columns, table_name) -> str:
 def current_time():
     return datetime.now().strftime("%H:%M:%S")
 
-"""def create_table_header(columns):
-    header_cells = ''.join(f'<th>{name}</th>' for name in columns)
-    header_html = f'<table id=border="5"><tr>{header_cells}</tr></table>'    
-    return header_html"""
-
-async def search(search_str, columns, table_name, retry_count=3, timeout_duration=10):
+async def search(search_str, columns, table_name, retry_count=3, timeout_duration=15):
     query = str_to_query(search_str, columns, table_name)
     for attempt in range(retry_count):
         try:
@@ -104,6 +99,7 @@ nest_asyncio.apply()
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=os.getcwd() + '/static'))
 results_cache = {}
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     results_cache.clear()
