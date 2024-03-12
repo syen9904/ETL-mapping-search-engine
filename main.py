@@ -134,6 +134,10 @@ db_path = parent_dir + "/database.db"
 table_name = 'data'
 COLUMNS = ['source_code', 'source_concept_id', 'source_code_description', 'source_vocabulary_id', 'source_domain_id', 'source_concept_class_id','target_concept_id', 'target_concept_name', 'target_vocabulary_id', 'target_domain_id', 'target_concept_class_id']
 
+for c in COLUMNS:
+    c = c.replace('source', 'PMAP')
+    c = c.replace('target', 'OMOP')
+
 if __name__ == "__main__":
     columns = create_db(csv_path=csv_path, db_path=db_path, table_name=table_name)
     if os.path.exists(csv_path): columns = COLUMNS
